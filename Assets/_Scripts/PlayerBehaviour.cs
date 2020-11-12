@@ -10,6 +10,8 @@ public class PlayerBehaviour : MonoBehaviour
     public float horizontalForce;
     public float verticalForce;
     public bool grounded;
+    public bool crouching = false;
+    public bool jumping = false;
     public GameObject spawnPoint;
 
     private Rigidbody2D m_rb2d;
@@ -24,39 +26,60 @@ public class PlayerBehaviour : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         _Move();
     }
 
     void _Move()
     {
-        if(grounded)
+        if (grounded)
         {
-            if (joystick.Horizontal > joystickHorizontalSensitivity)
+
+
+            if (!jumping && !crouching)
             {
-                // move right
-                m_rb2d.AddForce(Vector2.right * horizontalForce * Time.deltaTime);
-                m_spriteRenderer.flipX = false;
-                m_animator.SetInteger("AnimState", 1);
+                if (joystick.Horizontal > joystickHorizontalSensitivity)
+                {
+                    // move right
+                    m_rb2d.AddForce(Vector2.right * horizontalForce * Time.deltaTime);
+                    m_spriteRenderer.flipX = false;
+                    m_animator.SetInteger("AnimState", 1);
+                }
+                else if (joystick.Horizontal < -joystickHorizontalSensitivity)
+                {
+                    // move left
+                    m_rb2d.AddForce(Vector2.left * horizontalForce * Time.deltaTime);
+                    m_spriteRenderer.flipX = true;
+                    m_animator.SetInteger("AnimState", 1);
+                }
+                else
+                {
+                    //idle
+                    m_animator.SetInteger("AnimState", 0);
+                }
+
             }
-            else if (joystick.Horizontal < -joystickHorizontalSensitivity)
-            {
-                // move left
-                m_rb2d.AddForce(Vector2.left * horizontalForce * Time.deltaTime);
-                m_spriteRenderer.flipX = true;
-                m_animator.SetInteger("AnimState", 1);
-            }
-            else if (joystick.Vertical > joystickVerticalSensitivity)
+            if (joystick.Vertical > joystickVerticalSensitivity && !jumping)
             {
                 // jump
                 m_rb2d.AddForce(Vector2.up * verticalForce * Time.deltaTime);
                 m_animator.SetInteger("AnimState", 2);
+                jumping = true;
             }
             else
             {
-                //idle
-                m_animator.SetInteger("AnimState", 0);
+                jumping = false;
+            }
+
+            if (joystick.Vertical < -joystickVerticalSensitivity && (!crouching))
+            {
+                m_animator.SetInteger("AnimState", 3);
+                crouching = true;
+            }
+            else
+            {
+                crouching = false;
             }
         }
         
@@ -64,12 +87,18 @@ public class PlayerBehaviour : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        grounded = true;
+        if (collision.gameObject.CompareTag("Platforms"))
+        {
+            grounded = true;
+        }
     }
 
     private void OnCollisionExit2D(Collision2D collision)
     {
-        grounded = false;
+        if (collision.gameObject.CompareTag("Platforms"))
+        {
+            grounded = false;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
