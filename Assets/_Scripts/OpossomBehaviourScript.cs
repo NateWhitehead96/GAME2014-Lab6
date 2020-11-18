@@ -24,20 +24,58 @@ public class OpossomBehaviourScript : MonoBehaviour
     public bool onRamp;
     public RampDirection rampDirection;
 
+    public LOS opossumLOS;
+
+    [Header("Bullet Firing")]
+    public float fireDelay;
+    public Transform bulletSpawn;
+    public GameObject player;
+
     // Start is called before the first frame update
     void Start()
     {
         rb2d = GetComponent<Rigidbody2D>();
         rampDirection = RampDirection.NONE;
+        //player = GameObject.FindObjectOfType<PlayerBehaviour>();
         //direction = Vector2.left;
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
+        if(_HasLOS())
+        {
+            Debug.Log("Opossum sees player");
+            // fire from here
+            _FireBullet();
+        }
         _LookInFront();
         _LookAhead();
         _Move();
+    }
+
+    private void _FireBullet()
+    {
+        if (Time.frameCount % fireDelay == 0 && BulletManager.Instance().HasBullets())
+        {
+            var playerPosition = player.transform.position;
+            var firingDirection = Vector3.Normalize(playerPosition - bulletSpawn.position);
+
+            BulletManager.Instance().GetBullet(bulletSpawn.position, firingDirection);
+        }
+    }
+
+    private bool _HasLOS()
+    {
+        if (opossumLOS.colliders.Count > 0)
+        {
+            if (opossumLOS.collidesWith.gameObject.name == "Player" && opossumLOS.colliders[0].gameObject.name == "Player")
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
     private void _LookInFront()
     {

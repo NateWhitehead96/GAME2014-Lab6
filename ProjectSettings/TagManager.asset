@@ -8,6 +8,8 @@ TagManager:
   - Platforms
   - Walls
   - Ramps
+  - Opossum
+  - Bullet
   layers:
   - Default
   - TransparentFX
@@ -20,10 +22,10 @@ TagManager:
   - Platforms
   - Walls
   - Ramps
-  - 
-  - 
-  - 
-  - 
+  - Enemy
+  - Player
+  - Bullet
+  - AI
   - 
   - 
   - 
